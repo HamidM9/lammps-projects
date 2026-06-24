@@ -1,0 +1,67 @@
+# -----------------------------------------
+# Easy CO2 + water film example
+# 100 water molecules + 10 CO2 molecules
+# -----------------------------------------
+
+units real
+dimension 3
+boundary p p f
+atom_style full
+
+region box block 0 50 0 50 0 80
+create_box 4 box bond/types 2 angle/types 2 extra/bond/per/atom 2 extra/angle/per/atom 1 extra/special/per/atom 9
+
+# Atom types:
+# 1 = C in CO2
+# 2 = O in CO2
+# 3 = O in water
+# 4 = H in water
+
+mass 1 12.011
+mass 2 15.999
+mass 3 15.999
+mass 4 1.008
+
+special_bonds lj/coul 0.0 0.0 0.5
+
+molecule co2 co2.mol
+molecule water water.mol
+
+# Water film region: lower slab
+region waterfilm block 5 45 5 45 5 20
+
+# CO2 region: above water film
+region co2gas block 5 45 5 45 35 65
+
+create_atoms 0 random 100 12345 waterfilm mol water 98765 overlap 2.0 maxtry 10000
+create_atoms 0 random 10 54321 co2gas mol co2 56789 overlap 2.0 maxtry 10000
+
+bond_style harmonic
+angle_style harmonic
+
+# Bond type 1 = CO2 C-O
+# Bond type 2 = water O-H
+bond_coeff 1 1000.0 1.16
+bond_coeff 2 1000.0 0.9572
+
+# Angle type 1 = CO2 O-C-O
+# Angle type 2 = water H-O-H
+angle_coeff 1 200.0 180.0
+angle_coeff 2 100.0 104.5
+
+pair_style lj/cut 10.0
+pair_coeff * * 0.10 3.0
+
+velocity all create 300.0 12345 mom yes rot yes
+
+fix walllo all wall/reflect zlo EDGE
+fix wallhi all wall/reflect zhi EDGE
+
+fix 1 all nvt temp 300.0 300.0 100.0
+
+thermo 50
+thermo_style custom step temp pe ke etotal press
+
+dump 1 all custom 50 dump.co2_water_film id mol type x y z
+
+run 1000

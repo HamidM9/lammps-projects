@@ -1,0 +1,169 @@
+LAMMPS (22 Jul 2025 - Update 4)
+# -----------------------------------------
+# Easy CO2 + water film example
+# 100 water molecules + 10 CO2 molecules
+# -----------------------------------------
+
+units real
+dimension 3
+boundary p p f
+atom_style full
+
+region box block 0 50 0 50 0 80
+create_box 4 box bond/types 2 angle/types 2 extra/bond/per/atom 2 extra/angle/per/atom 1 extra/special/per/atom 9
+Created orthogonal box = (0 0 0) to (50 50 80)
+  1 by 1 by 1 MPI processor grid
+
+# Atom types:
+# 1 = C in CO2
+# 2 = O in CO2
+# 3 = O in water
+# 4 = H in water
+
+mass 1 12.011
+mass 2 15.999
+mass 3 15.999
+mass 4 1.008
+
+special_bonds lj/coul 0.0 0.0 0.5
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        0        0.5     
+  special bond factors coul:  0        0        0.5     
+     0 = max # of 1-2 neighbors
+     0 = max # of 1-3 neighbors
+     0 = max # of 1-4 neighbors
+    19 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+
+molecule co2 co2.mol
+Read molecule template co2:
+# CO2 molecule: O=C=O
+  1 molecules
+  0 fragments
+  0 bodies
+  3 atoms with max type 2
+  2 bonds with max type 1
+  1 angles with max type 1
+  0 dihedrals with max type 0
+  0 impropers with max type 0
+molecule water water.mol
+Read molecule template water:
+# Simple water molecule
+  1 molecules
+  0 fragments
+  0 bodies
+  3 atoms with max type 4
+  2 bonds with max type 2
+  1 angles with max type 2
+  0 dihedrals with max type 0
+  0 impropers with max type 0
+
+# Water film region: lower slab
+region waterfilm block 5 45 5 45 5 20
+
+# CO2 region: above water film
+region co2gas block 5 45 5 45 35 65
+
+create_atoms 0 random 100 12345 waterfilm mol water 98765 overlap 2.0 maxtry 10000
+Created 300 atoms
+  using lattice units in orthogonal box = (0 0 0) to (50 50 80)
+  create_atoms CPU = 0.002 seconds
+create_atoms 0 random 10 54321 co2gas mol co2 56789 overlap 2.0 maxtry 10000
+Created 30 atoms
+  using lattice units in orthogonal box = (0 0 0) to (50 50 80)
+  create_atoms CPU = 0.000 seconds
+
+bond_style harmonic
+angle_style harmonic
+
+# Bond type 1 = CO2 C-O
+# Bond type 2 = water O-H
+bond_coeff 1 1000.0 1.16
+bond_coeff 2 1000.0 0.9572
+
+# Angle type 1 = CO2 O-C-O
+# Angle type 2 = water H-O-H
+angle_coeff 1 200.0 180.0
+angle_coeff 2 100.0 104.5
+
+pair_style lj/cut 10.0
+pair_coeff * * 0.10 3.0
+
+velocity all create 300.0 12345 mom yes rot yes
+
+fix walllo all wall/reflect zlo EDGE
+fix wallhi all wall/reflect zhi EDGE
+
+fix 1 all nvt temp 300.0 300.0 100.0
+
+thermo 50
+thermo_style custom step temp pe ke etotal press
+
+dump 1 all custom 50 dump.co2_water_film id mol type x y z
+
+run 1000
+Generated 0 of 6 mixed pair_coeff terms from geometric mixing rule
+Neighbor list info ...
+  update: every = 1 steps, delay = 0 steps, check = yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 12
+  ghost atom cutoff = 12
+  binsize = 6, bins = 9 9 14
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair lj/cut, perpetual
+      attributes: half, newton on
+      pair build: half/bin/newton
+      stencil: half/bin/3d
+      bin: standard
+Per MPI rank memory allocation (min/avg/max) = 7.64 | 7.64 | 7.64 Mbytes
+   Step          Temp          PotEng         KinEng         TotEng         Press     
+         0   300            219.08594      294.20595      513.29189      468.30553    
+        50   432.43603      55.369897      424.08418      479.45408     -37.310432    
+       100   406.5862       24.489944      398.7336       423.22355      75.175872    
+       150   351.62359      29.432016      344.83251      374.26453      97.121681    
+       200   325.60109      12.060549      319.3126       331.37314     -11.526106    
+       250   268.272        49.172398      263.09073      312.26313     -49.796499    
+       300   276.27458      21.198084      270.93876      292.13684      63.872242    
+       350   279.37783      14.893381      273.98207      288.87545      119.10327    
+       400   271.24106      39.174125      266.00245      305.17657     -24.270326    
+       450   295.66767      27.227229      289.9573       317.18453     -81.520503    
+       500   323.69998      16.264434      317.4482       333.71264      6.8607861    
+       550   337.71553      12.301344      331.19307      343.49441      93.531056    
+       600   302.37121      56.593592      296.53137      353.12496      22.808898    
+       650   323.0054       18.93426       316.76704      335.7013      -8.1316344    
+       700   289.779        42.939443      284.18235      327.1218       58.649542    
+       750   290.98271      28.779034      285.36281      314.14185      49.690689    
+       800   273.85807      40.534081      268.56891      309.10299     -38.232982    
+       850   281.03244      29.933123      275.60472      305.53785      15.629974    
+       900   283.61859      39.360096      278.14092      317.50102      118.07447    
+       950   294.87017      41.724438      289.17519      330.89963      74.522908    
+      1000   322.65931      21.14592       316.42763      337.57355     -55.249599    
+Loop time of 0.0340693 on 1 procs for 1000 steps with 330 atoms
+
+Performance: 2536.008 ns/day, 0.009 hours/ns, 29351.945 timesteps/s, 9.686 Matom-step/s
+98.9% CPU use with 1 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.018046   | 0.018046   | 0.018046   |   0.0 | 52.97
+Bond    | 0.0022747  | 0.0022747  | 0.0022747  |   0.0 |  6.68
+Neigh   | 0.0073592  | 0.0073592  | 0.0073592  |   0.0 | 21.60
+Comm    | 0.00065998 | 0.00065998 | 0.00065998 |   0.0 |  1.94
+Output  | 0.0028462  | 0.0028462  | 0.0028462  |   0.0 |  8.35
+Modify  | 0.0024178  | 0.0024178  | 0.0024178  |   0.0 |  7.10
+Other   |            | 0.0004659  |            |       |  1.37
+
+Nlocal:            330 ave         330 max         330 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:            281 ave         281 max         281 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:           5748 ave        5748 max        5748 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 5748
+Ave neighs/atom = 17.418182
+Ave special neighs/atom = 2
+Neighbor list builds = 70
+Dangerous builds = 0
+Total wall time: 0:00:00
