@@ -1,0 +1,27 @@
+# -----------------------------
+# EAM example: FCC copper
+# -----------------------------
+
+units metal #lj,real
+dimension 3
+boundary p p p
+atom_style atomic #ID Type Position Velocity Force ---- full(co2), molecular ,charge 
+# 
+lattice fcc 3.615
+region box block 0 8 0 8 0 8
+create_box 1 box
+create_atoms 1 box
+
+mass 1 63.546 # atom_type,mass_value
+
+pair_style eam
+pair_coeff 1 1 Cu_u3.eam
+
+velocity all create 300.0 12345 mom yes rot no #temperature is (lord) kelvin
+
+fix 1 all nve
+
+thermo 100
+dump 1 all atom 100 dump.cu_eam
+
+run 1000

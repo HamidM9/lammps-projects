@@ -1,0 +1,87 @@
+LAMMPS (22 Jul 2025 - Update 4)
+# -----------------------------
+# EAM example: FCC copper
+# -----------------------------
+
+units metal
+dimension 3
+boundary p p p
+atom_style atomic
+
+lattice fcc 3.615
+Lattice spacing in x,y,z = 3.615 3.615 3.615
+region box block 0 8 0 8 0 8
+create_box 1 box
+Created orthogonal box = (0 0 0) to (28.92 28.92 28.92)
+  1 by 1 by 1 MPI processor grid
+create_atoms 1 box
+Created 2048 atoms
+  using lattice units in orthogonal box = (0 0 0) to (28.92 28.92 28.92)
+  create_atoms CPU = 0.000 seconds
+
+mass 1 63.546
+
+pair_style eam
+pair_coeff 1 1 Cu_u3.eam
+Reading eam potential file Cu_u3.eam with DATE: 2007-06-11
+
+velocity all create 300.0 12345 mom yes rot no
+
+fix 1 all nve
+
+thermo 100
+dump 1 all atom 100 dump.cu_eam
+
+run 1000
+Neighbor list info ...
+  update: every = 1 steps, delay = 0 steps, check = yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 6.95
+  ghost atom cutoff = 6.95
+  binsize = 3.475, bins = 9 9 9
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair eam, perpetual
+      attributes: half, newton on
+      pair build: half/bin/atomonly/newton
+      stencil: half/bin/3d
+      bin: standard
+Per MPI rank memory allocation (min/avg/max) = 3.876 | 3.876 | 3.876 Mbytes
+   Step          Temp          E_pair         E_mol          TotEng         Press     
+         0   300           -7249.92        0             -7170.5413      3505.2945    
+       100   141.45942     -7207.9586      0             -7170.5291      10319.396    
+       200   151.8245      -7210.704       0             -7170.5319      9696.3477    
+       300   149.45871     -7210.0768      0             -7170.5307      9878.2051    
+       400   145.45519     -7209.0174      0             -7170.5306      10060.049    
+       500   154.1188      -7211.3106      0             -7170.5314      9645.8224    
+       600   147.75461     -7209.6259      0             -7170.5307      9943.15      
+       700   153.26631     -7211.0847      0             -7170.5311      9741.2603    
+       800   156.79068     -7212.0175      0             -7170.5314      9573.7648    
+       900   143.87209     -7208.5984      0             -7170.5305      10067.154    
+      1000   149.18873     -7210.0058      0             -7170.5312      9783.5584    
+Loop time of 0.511405 on 1 procs for 1000 steps with 2048 atoms
+
+Performance: 168.946 ns/day, 0.142 hours/ns, 1955.398 timesteps/s, 4.005 Matom-step/s
+99.6% CPU use with 1 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.49167    | 0.49167    | 0.49167    |   0.0 | 96.14
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.0060434  | 0.0060434  | 0.0060434  |   0.0 |  1.18
+Output  | 0.0048435  | 0.0048435  | 0.0048435  |   0.0 |  0.95
+Modify  | 0.0067166  | 0.0067166  | 0.0067166  |   0.0 |  1.31
+Other   |            | 0.002127   |            |       |  0.42
+
+Nlocal:           2048 ave        2048 max        2048 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           4035 ave        4035 max        4035 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         137216 ave      137216 max      137216 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 137216
+Ave neighs/atom = 67
+Neighbor list builds = 0
+Dangerous builds = 0
+Total wall time: 0:00:00
